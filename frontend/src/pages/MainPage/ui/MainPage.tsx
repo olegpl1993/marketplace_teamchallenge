@@ -1,112 +1,91 @@
-import { FC } from 'react';
-
-import { useNavigate } from 'react-router-dom';
+import { FC, useState } from 'react';
 
 import SliderWidget from '../../../widgets/Slider/ui/SliderWidget';
 
 import { ProductSectionLayout } from '@/enteties/Product';
-import { getUserAuthData, userActions } from '@/enteties/User';
-import { getUserByCredentials } from '@/features/userAuth/model/services/getUserByCredentials';
 import {
   useGetNewProductsQuery,
   useGetPopularProductsQuery,
   useGetPromotionsProductsQuery,
 } from '@/pages/ProductsPage';
-import { productsPageActions } from '@/pages/ProductsPage/model/slices/productsPageSlice';
+import allProducts from '@/shared/assets/icons/allProducts.svg?react';
 import { Container } from '@/shared/layouts/Container';
-import { useAppDispatch } from '@/shared/lib/hooks/useAppDispatch';
-import { useAppSelector } from '@/shared/lib/hooks/useAppSelector';
 import { ReactHelmet } from '@/shared/SEO';
 import { Button } from '@/shared/ui/Button';
-import { HStack, VStack } from '@/shared/ui/Stack';
+import { Icon } from '@/shared/ui/Icon';
+import { HStack } from '@/shared/ui/Stack';
+import { Text } from '@/shared/ui/Text';
+import ModalCategoryMobile from '@/widgets/ModalCategory/ui/ModalCategoryMobile';
 import { Sidebar } from '@/widgets/Sidebar';
 
-interface Props {}
+const MainPage: FC = () => {
+  const [mobileAllCategories, setMobileAllCategories] = useState(false);
 
-const MainPage: FC<Props> = () => {
-  const user = useAppSelector(getUserAuthData);
   const newProduct = useGetNewProductsQuery({});
   const popularProduct = useGetPopularProductsQuery({});
   const promotionsProduct = useGetPromotionsProductsQuery({});
 
-  const navigate = useNavigate();
-
-  const dispatch = useAppDispatch();
-
-  const newProductsSearchParamsHandler = () => {
-    dispatch(productsPageActions.clearSortParams());
-    dispatch(productsPageActions.setSortDirection('1'));
-  };
-
-  const popularProductsSearchParamsHandler = () => {
-    dispatch(productsPageActions.clearSortParams());
-    dispatch(productsPageActions.setSortDirection('-1'));
-    dispatch(productsPageActions.setSortBy('views'));
-  };
-
-  const promotionsProductsSearchParamsHandler = () => {
-    dispatch(productsPageActions.clearSortParams());
-    dispatch(productsPageActions.setSortBy('views'));
-    dispatch(productsPageActions.setSortDirection('-1'));
-    dispatch(productsPageActions.setDiscount('1'));
-  };
-
-  const loginHandler = async () => {
-    await dispatch(
-      getUserByCredentials({
-        email: 'user123@example.com',
-        password: '12345678',
-      }),
-    );
-    navigate(0);
+  const openMobileAllCategoriesHandler = () => {
+    setMobileAllCategories(false);
   };
 
   return (
-    <div data-testid="MainPage" className="">
+    <div data-testid="MainPage" className="mt-9 mb-[56px] lg:mb-[72px]">
       <ReactHelmet link="/" />
-      <div>
-        {user?.username}
-        {!user ? (
-          <Button variant="fill" onClick={loginHandler}>
-            GET
-          </Button>
-        ) : (
-          <Button
-            variant="fill"
-            onClick={() => {
-              dispatch(userActions.logout());
-              navigate(0);
-            }}
-          >
-            Log out
-          </Button>
-        )}
-      </div>
+
       <Container>
-        <VStack justify="between" align="center">
-          <Sidebar />
+        <HStack justify="between" align="center" className="lg:flex-row">
+          <div className="hidden lg:block max-w-[314px] w-full">
+            <Sidebar />
+          </div>
           <SliderWidget />
-        </VStack>
-        <HStack gap="6" className="mt-10">
+          <Button
+            variant="primary"
+            className="relative lg:hidden w-full mt-4 h-[38px]"
+            onClick={() => setMobileAllCategories(true)}
+          >
+            <Icon
+              aria-hidden="true"
+              Svg={allProducts}
+              width={24}
+              height={24}
+              className="absolute top-[7px] left-[19px]"
+            />
+            <Text
+              Tag="span"
+              text="Всі товари"
+              size="sm"
+              className="font-semibold"
+              font="ibm-plex-sans"
+            />
+          </Button>
+        </HStack>
+        <HStack gap="6" className="mt-6 md:mt-10">
           <ProductSectionLayout
             isLoading={newProduct.isLoading}
             title="Новинки"
-            products={newProduct.data}
-            setSearchParams={newProductsSearchParamsHandler}
+            products={newProduct.data?.products}
+            searchParams="?sortDirection=-1"
           />
           <ProductSectionLayout
             isLoading={promotionsProduct.isLoading}
             title="Акційні пропозиції"
-            products={promotionsProduct.data}
-            setSearchParams={popularProductsSearchParamsHandler}
+            products={promotionsProduct.data?.products}
+            searchParams="?sortBy=views&sortDirection=-1&discount=1"
           />
           <ProductSectionLayout
             isLoading={popularProduct.isLoading}
             title="Популярні товари"
-            products={popularProduct.data}
-            setSearchParams={promotionsProductsSearchParamsHandler}
+            products={popularProduct.data?.products}
+            searchParams="?sortBy=views&sortDirection=-1"
           />
         </HStack>
+        <div className="lg:hidden">
+          <ModalCategoryMobile
+            isOpen={mobileAllCategories}
+            setIsOpen={openMobileAllCategoriesHandler}
+          />
+        </div>
       </Container>
     </div>
   );

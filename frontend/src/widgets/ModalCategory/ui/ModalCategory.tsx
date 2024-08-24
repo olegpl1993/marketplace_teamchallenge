@@ -22,10 +22,14 @@ const ModalCategory: FC<Props> = (props) => {
   const modalCategoriesRef = useRef<HTMLDivElement>(null);
   const listItemRef = useRef<HTMLUListElement>(null);
 
+  const [width, setWidth] = useState<number>(() => window.innerWidth);
   const { data, error, isLoading } = useAxios<Category[]>(ApiRoutes.CATEGORY);
-  const [currentCategory, setCurrentCategory] = useState<number | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<number>(0);
 
   useEffect(() => {
+    if (width < 1024) {
+      setClose();
+    }
     const outsideClickHandler = (event: MouseEvent | TouchEvent) => {
       if (
         modalCategoriesRef.current?.contains(event.target as Node) ||
@@ -51,10 +55,22 @@ const ModalCategory: FC<Props> = (props) => {
       document.removeEventListener('mousedown', outsideClickHandler);
       document.removeEventListener('keydown', escapeKeyHandler);
     };
-  }, [setClose, modalCategoriesRef, modalButtonRef, isOpen]);
+  }, [setClose, modalCategoriesRef, modalButtonRef, isOpen, width]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   if (isLoading) {
-    return <>Loading</>;
+    return null;
   }
 
   if (error) {
@@ -71,17 +87,17 @@ const ModalCategory: FC<Props> = (props) => {
       >
         <Transition
           show={isOpen}
-          enter="transition-all duration-300"
-          enterFrom="-translate-y-[125px] opacity-0"
-          enterTo="translate-y-0 opacity-100"
+          enter="ease-out duration-500"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
         >
           <VStack
             gap="5"
-            className="pt-9 pl-2 pb-6 bg-white-200 whitespace-nowrap rounded-b-2xl"
+            className="pt-9 pl-2 pb-6 bg-main-white whitespace-nowrap rounded-b-2xl"
           >
             <ul
               ref={listItemRef}
-              className="w-[313px] h-[520px] overflow-auto flex flex-col gap-2 px-[13px]"
+              className="w-[323px] h-[520px] overflow-auto flex flex-col gap-2 px-[13px]"
             >
               {data?.map((item, i) => (
                 <li
@@ -89,13 +105,14 @@ const ModalCategory: FC<Props> = (props) => {
                   onMouseEnter={() => setCurrentCategory(i)}
                   className={`max-w-[313px] relative ${currentCategory === i && 'font-bold'}`}
                 >
-                  <CategoryLink category={item} />
+                  <CategoryLink category={item} closeModal={setClose} />
                 </li>
               ))}
             </ul>
-            <div>
+            <div className="overflow-auto h-[500px] w-full">
               {data && (
                 <SubCategory
+                  closeModal={setClose}
                   data={data[currentCategory!]?.subcategories as Category[]}
                   isFirstSubCategory
                 />
@@ -107,7 +124,7 @@ const ModalCategory: FC<Props> = (props) => {
       {isOpen && (
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events,jsx-a11y/no-static-element-interactions
         <div
-          className="fixed left-0 right-0 bottom-0 top-[100px] z-[98] bg-black/20 "
+          className="fixed left-0 right-0 bottom-0 top-[100px] z-[98] bg-main-dark/50"
           onClick={setClose}
         />
       )}

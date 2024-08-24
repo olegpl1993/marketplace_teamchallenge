@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 
 import config from '../../config/config.js';
 
-const sendMail = async (mailTo, theme, token) => {
+const sendMail = async (mailTo, theme, token, data) => {
   const themesOfMail = {
     register: {
       from: 'peach market <13032004linx@gmail.com>',
@@ -12,6 +12,24 @@ const sendMail = async (mailTo, theme, token) => {
       html: `<a href="https://marketplace-teamchallenge.vercel.app/verify/${token}">Confirm Email</a>`,
     },
     recovery: {
+      from: 'peach market <peachSupport>',
+      to: mailTo,
+      subject: 'peach account password recovery',
+      text: 'to recovery password, follow the link',
+      html: `<a href="https://marketplace-teamchallenge.vercel.app/recovery/${token}">Recover Password</a>`,
+    },
+    subscribe: {
+      from: 'peach market <peachSupport>',
+      to: mailTo,
+      subject: 'peach seller change status',
+      text: `
+      user ${data.username}
+      email ${data.email}
+      id ${data._id}
+      
+       wanna change subscribe to ${data.subscribe}`,
+    },
+    else: {
       // other themes
     },
   };
@@ -36,10 +54,9 @@ const sendMail = async (mailTo, theme, token) => {
   try {
     // Send mail
     const result = await transporter.sendMail(mailOptions);
-
-    console.log('Email sent:', result);
   } catch (error) {
-    console.error(error);
+    // eslint-disable-next-line no-console
+    console.log(error);
   }
 };
 

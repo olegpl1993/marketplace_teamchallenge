@@ -20,19 +20,20 @@ export const productsPageSlice = createSlice({
     entities: {},
     isLoading: false,
     error: undefined,
-
-    // pagination
-    limit: 3,
+    limit: 12,
     offset: 0,
-
     name: '',
     sortBy: '',
     discount: '0',
     category: '',
     quantity: '1',
     sortDirection: '1',
-
-    _inited: false,
+    count: 0,
+    sellerId: '',
+    minRating: null,
+    minPrice: null,
+    maxPrice: null,
+    status: 'published',
   }),
   reducers: {
     setName: (state, action: PayloadAction<string>) => {
@@ -56,6 +57,18 @@ export const productsPageSlice = createSlice({
     setSortDirection: (state, action: PayloadAction<'1' | '-1'>) => {
       state.sortDirection = action.payload;
     },
+    setSellerId: (state, action: PayloadAction<string>) => {
+      state.sellerId = action.payload;
+    },
+    setMinRating: (state, action: PayloadAction<number>) => {
+      state.minRating = action.payload;
+    },
+    setMinPrice: (state, action: PayloadAction<number>) => {
+      state.minPrice = action.payload;
+    },
+    setMaxPrice: (state, action: PayloadAction<number>) => {
+      state.maxPrice = action.payload;
+    },
     clearSortParams: (state) => {
       state.name = '';
       state.sortBy = '';
@@ -63,33 +76,29 @@ export const productsPageSlice = createSlice({
       state.category = '';
       state.quantity = '1';
       state.sortDirection = '1';
-    },
-    initState: (state) => {
-      state._inited = true;
+      state.offset = 0;
+      state.count = 0;
+      state.sellerId = '';
+      state.minRating = null;
+      state.minPrice = null;
+      state.maxPrice = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProductsList.pending, (state, action) => {
+      .addCase(fetchProductsList.pending, (state) => {
         state.error = undefined;
         state.isLoading = true;
-
-        if (action.meta.arg.replace) {
-          productsAdapter.removeAll(state);
-        }
+        productsAdapter.removeAll(state);
       })
       .addCase(fetchProductsList.fulfilled, (state, action) => {
         state.isLoading = false;
-
-        if (action.meta.arg.replace) {
-          productsAdapter.setAll(state, action.payload);
-        } else {
-          productsAdapter.addMany(state, action.payload);
-        }
+        productsAdapter.setAll(state, action.payload.products);
+        state.count = action.payload.count;
       })
       .addCase(fetchProductsList.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        state.error = action.payload?.toString();
       });
   },
 });

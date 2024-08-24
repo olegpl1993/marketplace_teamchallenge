@@ -59,8 +59,8 @@ const categoryRoute = express.Router();
  *                 message:
  *                   type: string
  *                   example: "Bad Request: Missing required fields"
- *       500:
- *         description: Internal server error
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
 
 categoryRoute.post(
@@ -104,10 +104,64 @@ categoryRoute.post(
  *                     items:
  *                       $ref: '#/components/schemas/Category'
  *                     description: Nested subcategories
- *       500:
- *         description: Internal server error
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
 
 categoryRoute.get('/', categoryController.getCategory);
+
+/**
+ * @swagger
+ * /category/{id}:
+ *   delete:
+ *     tags: [Category]
+ *     summary: Delete a category by ID
+ *     description: Delete a specific category by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the category to delete
+ *     responses:
+ *       200:
+ *         description: Category deleted successfully
+ *       404:
+ *         description: Category not found
+ *       500:
+ *         description: Internal server error
+ */
+categoryRoute.delete('/:id', categoryController.deleteCategory);
+
+/**
+ * @swagger
+ * /category/getCategorysTree/{id}:
+ *   get:
+ *     summary: Get parent categories by category ID
+ *     tags: [Category]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the category to for get tree
+ *     responses:
+ *       200:
+ *         description: Parent categories found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Category'
+ *       404:
+ *         description: Category not found
+ *       500:
+ *         description: Server error
+ */
+
+categoryRoute.get('/getCategorysTree/:id', categoryController.getCategoryTree);
 
 export default categoryRoute;

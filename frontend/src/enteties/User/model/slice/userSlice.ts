@@ -1,9 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
-import { User, UserSchema } from '@/enteties/User';
+import { setPasswordUser, User, UserSchema } from '@/enteties/User';
 import { getUserWishlist } from '@/enteties/User/model/services/getUserWishlist';
+import { setEmailRecoverPasswordUser } from '@/enteties/User/model/services/setEmailRecoverPasswordUser';
+import { setInformationUser } from '@/enteties/User/model/services/setInformationUser';
 import { setNewUser } from '@/enteties/User/model/services/setNewUser';
+import { setRecoverPasswordUser } from '@/enteties/User/model/services/setRecoverPasswordUser';
 import { getUserByCredentials } from '@/features/userAuth/model/services/getUserByCredentials';
 import { $api } from '@/shared/api/api';
 import { ApiRoutes } from '@/shared/const/apiEndpoints';
@@ -40,15 +43,15 @@ export const userSlice = createSlice({
     },
     initAuthData: (state) => {
       const user = Cookies.get(COOKIE_KEY_USER);
-      const token = Cookies.get(COOKIE_KEY_TOKEN);
+
       const inspDate = Cookies.get(COOKIE_KEY_EXPIRATION_DATE_OF_USER);
 
-      if (user && token) {
+      if (user) {
         state.authData = JSON.parse(user);
         if (inspDate) {
           const storedExpirationDate = new Date(inspDate);
           const timeDifference = storedExpirationDate.getTime() - new Date().getTime();
-          const hoursDifference = timeDifference / (1000 * 60 * 60); // max 7 days access token live
+          const hoursDifference = timeDifference / (1000 * 60 * 60);
 
           if (hoursDifference < 5) {
             state.authData = undefined;
@@ -82,10 +85,42 @@ export const userSlice = createSlice({
         state.error = undefined;
         state.isLoading = true;
       })
+      .addCase(setInformationUser.pending, (state) => {
+        state.error = undefined;
+        state.isLoading = true;
+      })
+      .addCase(setPasswordUser.pending, (state) => {
+        state.error = undefined;
+        state.isLoading = true;
+      })
+      .addCase(setEmailRecoverPasswordUser.pending, (state) => {
+        state.error = undefined;
+        state.isLoading = true;
+      })
+      .addCase(setRecoverPasswordUser.pending, (state) => {
+        state.error = undefined;
+        state.isLoading = true;
+      })
       .addCase(getUserByCredentials.fulfilled, (state) => {
         state.userWishlist.isLoading = false;
       })
       .addCase(setNewUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = undefined;
+      })
+      .addCase(setInformationUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = undefined;
+      })
+      .addCase(setPasswordUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = undefined;
+      })
+      .addCase(setEmailRecoverPasswordUser.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = undefined;
+      })
+      .addCase(setRecoverPasswordUser.fulfilled, (state) => {
         state.isLoading = false;
         state.error = undefined;
       })
@@ -94,6 +129,22 @@ export const userSlice = createSlice({
         state.userWishlist.error = action.payload as string;
       })
       .addCase(setNewUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(setInformationUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(setPasswordUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(setEmailRecoverPasswordUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(setRecoverPasswordUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

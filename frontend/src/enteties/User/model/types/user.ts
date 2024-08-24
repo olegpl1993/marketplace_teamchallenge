@@ -4,6 +4,15 @@ export interface User {
   surname: string;
   email: string;
   role: string;
+  dob?: string;
+  phoneNumber?: string;
+  isAccountConfirm: boolean;
+  accountStatus?: string;
+  created_at?: string;
+  activity?: {
+    _id: string;
+    date: string;
+  };
 }
 
 export interface UserWithWishlist extends User {

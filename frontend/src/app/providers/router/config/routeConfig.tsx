@@ -1,18 +1,28 @@
 import { RouteProps } from 'react-router-dom';
 
 import { UserRoles } from '@/enteties/User/model/types/userRoles';
+import { AdminPage } from '@/pages/AdminPage';
 import { MainPage } from '@/pages/MainPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
-// import { ProductPage } from '@/pages/ProductPage';
-// import { ProductsPage } from '@/pages/ProductsPage';
-// import { ProductsPage } from '@/pages/ProductsPage';
+import { ProductCommentPage, ProductPage } from '@/pages/ProductPage';
+import { ProductsPage } from '@/pages/ProductsPage';
+import { ProfilePage } from '@/pages/ProfilePage';
+import { RecoverPasswordPage } from '@/pages/RecoverPasswordPage';
+import { SellerPage } from '@/pages/SellerPage';
+import { SellerRegistrationPage } from '@/pages/SellerRegistrationPage';
+import { VerifyPage } from '@/pages/VerifyPage';
 import {
   AppRoutes,
   getRouteMain,
-  // getRouteProducts,
-  // getRouteProduct,
-  // getRouteProducts,
+  getRouteProducts,
   getRouteProfile,
+  getSellerProfile,
+  getVerifyRoute,
+  getRecoverPasswordRoute,
+  getSellerRegistration,
+  getAdminProfile,
+  getRouteProduct,
+  getRouteProductComments,
 } from '@/shared/const/routes';
 
 export type AppRoutesProps = RouteProps & {
@@ -25,19 +35,47 @@ export const RouteConfig: Record<AppRoutes, AppRoutesProps> = {
     path: getRouteMain(),
     element: <MainPage />,
   },
-  // [AppRoutes.PRODUCT]: {
-  //   path: getRouteProduct(':id'),
-  //   element: <ProductPage />,
-  // },
-  // [AppRoutes.PRODUCTS]: {
-  //   path: getRouteProducts(),
-  //   element: <ProductsPage />,
-  // },
+  [AppRoutes.PRODUCT]: {
+    path: getRouteProduct(':id'),
+    element: <ProductPage />,
+  },
+  [AppRoutes.PRODUCT_COMMENTS]: {
+    path: getRouteProductComments(':id'),
+    element: <ProductCommentPage />,
+  },
+  [AppRoutes.PRODUCTS]: {
+    path: getRouteProducts(),
+    element: <ProductsPage />,
+  },
   [AppRoutes.PROFILE]: {
-    path: getRouteProfile(),
+    path: getRouteProfile(':id'),
     authOnly: true,
-    element: <div data-testid="ProfilePage">Profile</div>,
+    element: <ProfilePage />,
     roles: [UserRoles.USER, UserRoles.SUPER_ADMIN, UserRoles.ADMIN],
+  },
+  [AppRoutes.SELLER]: {
+    path: getSellerProfile(':id'),
+    authOnly: true,
+    element: <SellerPage />,
+    roles: [UserRoles.SELLER],
+  },
+  [AppRoutes.ADMIN]: {
+    path: getAdminProfile(':id'),
+    authOnly: true,
+    element: <AdminPage />,
+    roles: [UserRoles.USER, UserRoles.SELLER, UserRoles.SUPER_ADMIN, UserRoles.ADMIN],
+  },
+  [AppRoutes.SELLER_REGISTRATION]: {
+    path: getSellerRegistration(),
+    element: <SellerRegistrationPage />,
+  },
+  [AppRoutes.VERIFY]: {
+    path: getVerifyRoute(':id'),
+    element: <VerifyPage />,
+  },
+  [AppRoutes.RECOVER_PASSWORD]: {
+    path: getRecoverPasswordRoute(':id'),
+    element: <RecoverPasswordPage />,
   },
   [AppRoutes.NOT_FOUND]: {
     path: '*',

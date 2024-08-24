@@ -10,7 +10,7 @@ const authRoute = express.Router();
  * /auth/:
  *   post:
  *     summary: Login user
- *     description: "Authenticate a user and return a JWT accessToken.\n\n premission: \"none\""
+ *     description: "Authenticate a user. Return a JWT `accessToken` and set `refreshToken` to http only cookies.\n\n premission: `none`"
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -57,7 +57,8 @@ const authRoute = express.Router();
  *                      type: string
  *              example:
  *               message: "Auth success."
- *               user: { _id: "some_id", username: "some_username", surname: "some_surname", email: "user@example.com" ,role: "user" }
+ *               user: { _id: "some_id", username: "some_username", surname: "some_surname", email: "user@example.com" ,role: "user", dob: "1990-01-01T00:00:00.000Z" , isAccountConfirm: false,  phoneNumber: "+1234567890","wishlist": [] }
+ *               accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YjhmNDdmMmYyYTAwZmY4Nzk2NTlkYSIsImlhdCI6MTcxMDUwNTUyOCwiZXhwIjoxNzEwNTA4NTI4fQ.MVx5jAMHEljgC9DGHI6XJELpQJZ--QOGIcHIAQ6LYLY"
  *
  *       '403':
  *         description: Invalid password
@@ -90,15 +91,7 @@ const authRoute = express.Router();
  *                   type: string
  *                   example: too many failed attempts
  *       '500':
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Internal server error
+ *         $ref: '#/components/responses/InternalServerError'
  */
 // checkPermission('login'),
 authRoute.post('/', authController.login);
@@ -118,8 +111,8 @@ authRoute.post('/', authController.login);
  *             schema:
  *               type: string
  *               example: Logged out successfully.
- *       500:
- *         description: Internal server error.
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
 // checkPermission('logout'),
 authRoute.delete('/', authController.logout);
@@ -149,6 +142,8 @@ authRoute.delete('/', authController.logout);
  *         description: Token has been successfully set in cookies.
  *       400:
  *         description: Token is required in the request body.
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
 
 authRoute.post('/set-accessToken', authController.setToken);
@@ -194,18 +189,43 @@ authRoute.post('/set-accessToken', authController.setToken);
  *                 message:
  *                   type: string
  *                   example: Token expired
- *       500:
- *         description: Unexpected error.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Unexpected error
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
  */
 
 authRoute.get('/refresh-token', authController.refreshTokens);
+
+/**
+ * @openapi
+ * /auth/confirm/{confirmToken}:
+ *   get:
+ *     summary: Get user by Id
+ *     description: "Retrieve details of a user by their Id. \n\n premission: \"getUser\""
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: confirmToken
+ *         required: true
+ *         description: Unique Id of the user to retrieve
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "User get successfully."
+ *               user: { _id: "some_id", username: "some_username", surname: "some_surname", email: "user@example.com" ,role: "user", dob: "1990-01-01T00:00:00.000Z" , isAccountConfirm: false,  phoneNumber: "+1234567890","wishlist": [] }
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             example:
+ *                message: 'Invalid user Id'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+authRoute.get('/confirm/:confirmToken', authController.confirmToken);
 
 export default authRoute;

@@ -3,7 +3,7 @@ import { Meta, StoryObj } from '@storybook/react';
 import { LoginForm } from '@/features/userAuth/ui/LoginForm/index';
 
 const meta = {
-  title: 'UI/LoginForm',
+  title: 'Forms/LoginForm',
   component: LoginForm,
   parameters: {
     layout: 'centered',
@@ -14,7 +14,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const LoginFormStory: Story = {
+export const Basic: Story = {
   args: {},
   decorators: [(Story) => <Story />],
 };

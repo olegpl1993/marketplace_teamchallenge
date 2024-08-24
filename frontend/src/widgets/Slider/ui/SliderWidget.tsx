@@ -2,8 +2,8 @@ import { FC } from 'react';
 
 import { ApiRoutes } from '@/shared/const/apiEndpoints';
 import useAxios from '@/shared/lib/hooks/useAxios';
-import { Skeleton } from '@/shared/ui/Skeleton';
 import { Slider } from '@/shared/ui/Slider';
+import SliderWidgetLoader from '@/widgets/Slider/ui/SliderWidgetLoader';
 
 interface ImageData {
   _id: string;
@@ -11,13 +11,11 @@ interface ImageData {
 }
 
 const SliderWidget: FC = () => {
-  const { data, error, isLoading } = useAxios<ImageData[]>(
-    `${ApiRoutes.CONTROL_PANEL}/banner`,
-  );
+  const { data, error, isLoading } = useAxios<ImageData[]>(`${ApiRoutes.CONTROL_PANEL}`);
 
   const renderContent = () => {
     if (isLoading) {
-      return <Skeleton width="979px" height="504px" className="!rounded-2xl" />;
+      return <SliderWidgetLoader />;
     }
 
     if (error) {
@@ -29,7 +27,7 @@ const SliderWidget: FC = () => {
     }
 
     return (
-      <div className="max-w-[979px] h-[504px] w-full">
+      <div className="max-w-[979px] lg:h-[504px] w-full">
         <Slider images={data} />
       </div>
     );

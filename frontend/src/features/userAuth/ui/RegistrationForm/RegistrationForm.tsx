@@ -4,8 +4,9 @@ import ReCAPTCHA from 'react-google-recaptcha';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
+import { setNewUser } from '@/enteties/User';
 import { userHasError } from '@/enteties/User/model/selectors/getUserAuthData';
-import { setNewUser } from '@/enteties/User/model/services/setNewUser';
+import checked from '@/shared/assets/icons/checked.svg?react';
 import privateEye from '@/shared/assets/icons/private-eye.svg?react';
 import unPrivateEye from '@/shared/assets/icons/unprivate-eye.svg?react';
 import { useAppDispatch } from '@/shared/lib/hooks/useAppDispatch';
@@ -17,7 +18,7 @@ import { Input } from '@/shared/ui/Input';
 import { VStack } from '@/shared/ui/Stack';
 
 interface RegistrationFormProps {
-  onToggleForm?: () => void;
+  onToggleForm?: (index: number) => void;
   onCloseModal?: () => void;
 }
 
@@ -80,12 +81,12 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
 
   const onClickChangeForm = () => {
     if (onToggleForm) {
-      onToggleForm();
+      onToggleForm(0);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-[360px]">
+    <form onSubmit={handleSubmit(onSubmit)} className="md:max-w-[360px]">
       <Input
         variant="basic"
         placeholder={t("Ім'я")}
@@ -97,9 +98,13 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
             value: 15,
             message: t("Ваше ім'я має бути не більше 15 символів"),
           },
+          pattern: {
+            value: /^[A-Za-zҐґЄєІіЇїА-Яа-я]+$/,
+            message: t("Ваше ім'я може включати тільки українські або англійські літери"),
+          },
         })}
         error={errors?.inputName && errors?.inputName.message}
-        className="mt-6"
+        className="min-h-[48px] w-full md:min-w-[360px] mt-6"
       />
       <Input
         variant="basic"
@@ -107,7 +112,7 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
         type="text"
         {...register('inputEmail', {
           required: t("Це поле є обов'язковим"),
-          minLength: { value: 5, message: t('Ваш логін має бути не менше 6 символів') },
+          minLength: { value: 6, message: t('Ваш логін має бути не менше 6 символів') },
           pattern: {
             value:
               /^([a-zA-Z0-9_-]+\.)*[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*\.[a-zA-Z]{2,6}$/,
@@ -115,7 +120,7 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
           },
         })}
         error={errors?.inputEmail && errors?.inputEmail.message}
-        className="mt-10"
+        className="min-h-[48px] w-full md:min-w-[360px] mt-10"
       />
       <div className="relative mt-10 mb-10">
         <Input
@@ -125,17 +130,18 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
           {...register('inputPassword', {
             required: t("Це поле є обов'язковим"),
             minLength: {
-              value: 8,
+              value: 9,
               message: t('Ваш пароль має бути не менше 9 символів'),
             },
             pattern: {
               value: /^(?=.*[A-Z])[A-Za-z0-9~`!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/]*$/,
               message: t(
-                'Пароль має містити 9 символів, з яких має бути одна велика літера',
+                'Пароль має містити мінімум 9 символів, включаючи велику латинську літеру',
               ),
             },
           })}
           error={errors?.inputPassword && errors?.inputPassword.message}
+          className="min-h-[48px] w-full md:min-w-[360px]"
         />
         <Icon
           clickable
@@ -143,7 +149,7 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
           Svg={passShown ? privateEye : unPrivateEye}
           width={24}
           height={24}
-          className="absolute top-[12px] right-[12px]"
+          className="absolute top-[12px] right-[12px] fill-selected-dark"
         />
       </div>
       <div className="mb-4">
@@ -155,30 +161,42 @@ const RegistrationForm: FC<RegistrationFormProps> = (props) => {
           }}
         />
       </div>
-      <Checkbox
-        type="checkbox"
-        variant="basic"
-        label={t('Надання згоди про обробку персональних даних')}
-        {...register('personalTerms', {
-          required: true,
-        })}
-      />
+      <VStack align="center" className="gap-[4px]">
+        <Checkbox
+          type="checkbox"
+          classNameLabel="text-light-grey text-[14px] has-[:checked]:text-main-dark hover:text-light-grey"
+          className="w-[18px] h-[18px] border-[3px] border-light-grey rounded-[3px] hover:border-main-dark checked:border-green checked:bg-green checked:hover:border-green focus:outline-none"
+          classNameIcon="ml-[2px]"
+          icon={checked}
+          label={t('Ви надаєте згоду на')}
+          {...register('personalTerms', {
+            required: true,
+          })}
+        />
+        <a
+          href="src/shared/assets/img/Error404vector.png" // test file, later to change to real document.
+          download="User-agreement"
+          className="outfit font-normal text-[14px] text-[#0F62FE] underline"
+        >
+          {t('Користувацьку угоду')}
+        </a>
+      </VStack>
       <Input
         variant="clear"
         value={t('Зареєструватись')}
         name="btnInput"
         type="submit"
         disabled={!isValid || !reCaphaValue}
-        className="outfit bg-primary min-w-full py-[4px] mt-6 rounded-lg font-normal text-[18px] leading-[40px] text-black duration-300 hover:bg-secondary active:bg-primary disabled:text-white-300 disabled:bg-white-400"
+        className="outfit bg-main min-w-full py-[4px] mt-6 rounded-lg font-normal text-[18px] leading-[40px] text-main-dark duration-300 hover:bg-secondary-yellow active:bg-main disabled:text-main-white disabled:bg-disabled"
       />
       <VStack align="center" className="mt-6" justify="between">
-        <span className="outfit text-right text-gray-900 text-[14px] font-normal leading-[18px]">
+        <span className="outfit text-right text-main-dark text-[14px] font-normal leading-[18px]">
           {t('Є обліковий запис?')}
         </span>
         <Button
           variant="clear"
           onClick={onClickChangeForm}
-          className="outfit text-right text-black text-[14px] font-semibold decoration-solid decoration-black underline decoration-1"
+          className="outfit text-right text-main-dark text-[14px] font-semibold decoration-solid decoration-main-dark underline decoration-1"
         >
           {t('Увійти')}
         </Button>

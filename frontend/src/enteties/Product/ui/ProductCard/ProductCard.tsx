@@ -2,10 +2,9 @@ import { FC, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import { Product } from '../../model/types/product';
-
 import ProductCardSkeleton from './ProductCardSkeleton';
 
+import { Product } from '@/enteties/Product';
 import { getUserAuthData, getUserWishlist, getWishlist } from '@/enteties/User';
 import { $api } from '@/shared/api/api';
 import heart from '@/shared/assets/icons/heart.svg?react';
@@ -17,6 +16,7 @@ import { Button } from '@/shared/ui/Button';
 import { Icon } from '@/shared/ui/Icon';
 import { Image } from '@/shared/ui/Image';
 import { Link } from '@/shared/ui/Link';
+import { Skeleton } from '@/shared/ui/Skeleton';
 import { HStack, VStack } from '@/shared/ui/Stack';
 import { Text, TextColors } from '@/shared/ui/Text';
 
@@ -25,7 +25,7 @@ interface quantityResult {
   color: TextColors;
 }
 
-const quantityCalc = (quantity: number): quantityResult => {
+export const quantityCalc = (quantity: number): quantityResult => {
   if (quantity > 5) {
     return {
       text: 'Є в наявності',
@@ -45,22 +45,24 @@ const quantityCalc = (quantity: number): quantityResult => {
   };
 };
 
-const countDiscount = (value: number, percentage: number): string => {
+export const countDiscount = (value: number, percentage: number): string => {
   if (percentage === 100) {
-    return '0';
+    return '';
   }
 
-  return (value - Math.round((value * percentage) / 100)).toFixed(2);
+  return (value - Math.round((value * percentage) / 100)).toFixed(0);
 };
 
 interface Props {
   product: Product;
+  dark?: boolean;
+  dashboard?: boolean;
 }
 
 const ProductCard: FC<Props> = (props) => {
   const { t } = useTranslation();
 
-  const { product } = props;
+  const { product, dark, dashboard = false } = props;
 
   const { _id, name, discount, images, price, quantity } = product;
 
@@ -93,35 +95,47 @@ const ProductCard: FC<Props> = (props) => {
   }
 
   return (
-    <div className="relative w-[313px] h-[445px] p-4 rounded-2xl shadow-custom-base hover:shadow-custom-hover duration-75">
-      {images.length > 0 ? (
-        <Link
-          to={getRouteProduct(`${_id}`)}
-          className="line-clamp-2 text-[16px] !leading-[22.4px]"
-        >
+    <HStack
+      justify="between"
+      className={`relative p-[6px] lg:p-4 rounded-2xl
+      ${dashboard ? 'min-w-[132px] min-h-[248px]' : 'min-w-[168px] min-h-[248px]'}
+       max-w-[313px] w-full 
+       max-h-[445px] h-full
+       ${!dark ? 'shadow-custom-base hover:shadow-custom-hover' : 'bg-dark-grey'}  
+       duration-75`}
+    >
+      {images?.length > 0 ? (
+        <Link to={getRouteProduct(`${_id}`)}>
           <Image
-            src={`${process.env.BASE_URL}${images[0]}`}
+            loadingFallback={
+              <Skeleton
+                width="156px"
+                height="140px"
+                className="lg:!w-[280px] lg:!h-[252px]"
+              />
+            }
+            src={`${images[0]}`}
             alt="product-card-img"
-            className="!h-[252px] !w-[281px]"
+            className={`${dashboard ? 'min-h-[118px] !min-w-[132px]' : 'h-[140px] !min-w-[156px]'} 
+            lg:h-[252px] !max-w-[281px] w-full`}
           />
         </Link>
       ) : (
-        <Link
-          to={getRouteProduct(`${_id}`)}
-          className="line-clamp-2 text-[16px] !leading-[22.4px]"
-        >
+        <Link to={getRouteProduct(`${_id}`)}>
           <Image src="" alt="product-card-img" className="!h-[252px] !w-[281px]" />
         </Link>
       )}
 
       <div className="mt-2">
         {/* Name */}
-        <div className="h-[44px] ">
-          <Link
-            to={getRouteProduct(`${_id}`)}
-            className="line-clamp-2 text-[16px] !leading-[22.4px]"
-          >
-            {name}
+        <div className="h-[44px] overflow-hidden">
+          <Link to={getRouteProduct(`${_id}`)}>
+            <Text
+              Tag="span"
+              text={name}
+              size="xs"
+              className={`${dark && 'text-main-white'} lg:text-md text-wrap text-ellipsis`}
+            />
           </Link>
         </div>
 
@@ -129,49 +143,49 @@ const ProductCard: FC<Props> = (props) => {
         {discount ? (
           <VStack gap="1" align="center" className="mt-1">
             <Text
-              size="lg"
+              size="sm"
               font="ibm-plex-sans"
               Tag="p"
               text={price.toString()}
-              className="line-through font-semibold"
+              className="line-through font-semibold lg:text-lg"
               color="gray"
             />
             <Text font="ibm-plex-sans" size="sm" Tag="span" text="грн" color="gray" />
           </VStack>
         ) : (
-          <div className="h-[40px]" />
+          <div className="h-[18px] lg:h-[40px]" />
         )}
 
         {/*  Main price */}
         <VStack gap="1" align="center" className="gap-1 ">
           <Text
-            size="4xl"
+            size="xl"
             font="ibm-plex-sans"
             Tag="p"
             text={countDiscount(price, discount || 0).toString()}
-            className={`${discount && 'text-red'}`}
+            className={`${dark && 'text-main-white'} font-medium lg:text-4xl`}
           />
           <Text
             size="2xl"
             font="ibm-plex-sans"
             Tag="span"
             text="грн"
-            className={` ${discount && 'text-red'}`}
+            className={`${dark && 'text-main-white'}`}
           />
         </VStack>
-
-        {/*  Quantity */}
-        <Text
-          Tag="span"
-          size="sm"
-          text={t(quantityCalc(quantity).text)}
-          color={quantityCalc(quantity).color}
-          className="mt-2"
-        />
       </div>
 
+      {/*  Quantity */}
+      <Text
+        Tag="span"
+        size="xxs"
+        text={t(quantityCalc(quantity).text)}
+        color={quantityCalc(quantity).color}
+        className="mt-2 lg:text-sm"
+      />
+
       {/*  Heart Icon */}
-      <HStack className="absolute top-[24px] right-[24px]">
+      <HStack className="absolute top-[12px] right-[12px] lg:top-[24px] lg:right-[24px]">
         <Button
           variant="clear"
           disabled={heartIsDisabled}
@@ -179,11 +193,11 @@ const ProductCard: FC<Props> = (props) => {
         >
           <Icon
             Svg={heart}
-            className={`${wishlist.includes(_id) ? 'fill-secondary' : '!stroke-2 !stroke-gray-900'}  ${heartIsDisabled && 'opacity-40'}`}
+            className={`${wishlist?.includes(_id) ? 'fill-secondary-yellow' : `!stroke-2 ${dark ? '!stroke-secondary-yellow' : '!stroke-main-dark'}`}  ${heartIsDisabled && 'opacity-40'}`}
           />
         </Button>
       </HStack>
-    </div>
+    </HStack>
   );
 };
 

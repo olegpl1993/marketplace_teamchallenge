@@ -10,8 +10,6 @@ export const getProductsPageName = (state: StateSchema) => state.products.name;
 
 export const getProductsPageSortBy = (state: StateSchema) => state.products.sortBy;
 
-export const getProductsPageInited = (state: StateSchema) => state.products._inited;
-
 export const getProductsPageDiscount = (state: StateSchema) => state.products.discount;
 
 export const getProductsPageCategory = (state: StateSchema) => state.products.category;
@@ -22,3 +20,15 @@ export const getProductsPageQuantity = (state: StateSchema) => state.products.qu
 
 export const getProductsPageSortDirection = (state: StateSchema) =>
   state.products.sortDirection;
+
+export const getProductsCount = (state: StateSchema) => state.products.count;
+
+export const getProductsPageSellerId = (state: StateSchema) => state.products.sellerId;
+
+export const getProductsPageMinRating = (state: StateSchema) => state.products.minRating;
+
+export const getProductsPageMinPrice = (state: StateSchema) => state.products.minPrice;
+
+export const getProductsPageMaxPrice = (state: StateSchema) => state.products.maxPrice;
+
+export const getProductsPageStatus = (state: StateSchema) => state.products.status;

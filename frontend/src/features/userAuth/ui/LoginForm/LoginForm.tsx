@@ -1,24 +1,29 @@
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import TestLogin from './TestLogin';
+
 import { loginHasError } from '@/features/userAuth';
 import { getUserByCredentials } from '@/features/userAuth/model/services/getUserByCredentials';
 import privateEye from '@/shared/assets/icons/private-eye.svg?react';
 import unPrivateEye from '@/shared/assets/icons/unprivate-eye.svg?react';
-import { getRouteProfile } from '@/shared/const/routes';
+import {
+  getAdminProfile,
+  getRouteProfile,
+  getSellerProfile,
+} from '@/shared/const/routes';
 import { useAppDispatch } from '@/shared/lib/hooks/useAppDispatch';
 import { useAppSelector } from '@/shared/lib/hooks/useAppSelector';
 import { Button } from '@/shared/ui/Button';
 import { Icon } from '@/shared/ui/Icon';
 import { Input } from '@/shared/ui/Input';
-import { Link } from '@/shared/ui/Link';
 import { VStack } from '@/shared/ui/Stack';
 
 interface LoginFormProps {
-  onToggleForm?: () => void;
+  onToggleForm?: (index: number) => void;
   onCloseModal?: () => void;
 }
 
@@ -60,7 +65,17 @@ const LoginForm: FC<LoginFormProps> = (props) => {
         if (onCloseModal) {
           onCloseModal();
         }
-        navigate(getRouteProfile());
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const { role } = value.payload.user;
+
+        if (role === 'user') {
+          navigate(getRouteProfile('info'));
+        } else if (role === 'seller') {
+          navigate(getSellerProfile('dashboard'));
+        } else if (role === 'admin') {
+          navigate(getAdminProfile('users'));
+        }
       }
     });
   };
@@ -76,7 +91,7 @@ const LoginForm: FC<LoginFormProps> = (props) => {
               'За даним e-mail не зареєстрований жоден користувач. Введіть вірний e-mail, або зареєструйтесь',
             )
           : errorServer?.includes('423')
-            ? t('Ваш акаунт заблоковано! Спробуйте будь-ласка пізніше')
+            ? t('Ваш акаунт заблоковано! Спробуйте будь-ласка через 1 годину')
             : '',
     });
     setError('inputPassword', {
@@ -92,19 +107,19 @@ const LoginForm: FC<LoginFormProps> = (props) => {
 
   const onClickChangeForm = () => {
     if (onToggleForm) {
-      onToggleForm();
+      onToggleForm(1);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-[360px]">
+    <form onSubmit={handleSubmit(onSubmit)} className="md:max-w-[360px]">
       <Input
         variant="basic"
         placeholder="Email"
         type="text"
         {...register('inputEmail', {
           required: t("Це поле є обов'язковим"),
-          minLength: { value: 5, message: t('Ваш логін має бути не менше 6 символів') },
+          minLength: { value: 6, message: t('Ваш логін має бути не менше 6 символів') },
           pattern: {
             value:
               /^([a-zA-Z0-9_-]+\.)*[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*\.[a-zA-Z]{2,6}$/,
@@ -112,7 +127,7 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           },
         })}
         error={errors?.inputEmail && errors?.inputEmail.message}
-        className="mt-6"
+        className="min-h-[48px] w-full md:min-w-[360px] mt-6"
       />
       <div className="relative mt-10">
         <Input
@@ -122,11 +137,18 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           {...register('inputPassword', {
             required: t("Це поле є обов'язковим"),
             minLength: {
-              value: 8,
+              value: 9,
               message: t('Ваш пароль має бути не менше 9 символів'),
+            },
+            pattern: {
+              value: /^(?=.*[A-Z])[A-Za-z0-9~`!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/]*$/,
+              message: t(
+                'Пароль має містити мінімум 9 символів, включаючи велику латинську літеру',
+              ),
             },
           })}
           error={errors?.inputPassword && errors?.inputPassword.message}
+          className="min-h-[48px] w-full md:min-w-[360px]"
         />
         <Icon
           clickable
@@ -134,17 +156,21 @@ const LoginForm: FC<LoginFormProps> = (props) => {
           Svg={passShown ? privateEye : unPrivateEye}
           width={24}
           height={24}
-          className="absolute top-[12px] right-[12px]"
+          className="absolute top-[12px] right-[12px] fill-selected-dark"
         />
       </div>
       <div className="text-right">
-        <Link
-          to="/*" // how create page, update this routes
-          onClick={onCloseModal}
-          className="inline-block outfit text-gray-900 text-[14px] font-normal leading-[18px] mt-5 mb-6"
+        <Button
+          variant="clear"
+          onClick={() => {
+            if (onToggleForm) {
+              onToggleForm(2);
+            }
+          }}
+          className="inline-block outfit text-main-dark text-[14px] font-normal leading-[18px] mt-5 mb-6"
         >
           {t('Забули пароль?')}
-        </Link>
+        </Button>
       </div>
       <Input
         variant="clear"
@@ -152,18 +178,21 @@ const LoginForm: FC<LoginFormProps> = (props) => {
         name="btnInput"
         type="submit"
         disabled={!isValid}
-        className="cursor-pointer outfit bg-primary min-w-full py-[4px] rounded-lg font-normal text-[18px] leading-[40px] text-black duration-300 hover:bg-secondary active:bg-primary disabled:text-white-300 disabled:bg-white-400"
+        className="cursor-pointer outfit bg-main min-w-full py-[4px] rounded-lg font-normal text-[18px] leading-[40px] text-main-dark duration-300 hover:bg-secondary-yellow active:bg-main disabled:text-main-white disabled:bg-disabled"
       />
+
+      <TestLogin onCloseModal={onCloseModal} />
+
       <VStack align="center" className="mt-6" justify="between">
-        <span className="outfit text-right text-gray-900 text-[14px] font-normal leading-[18px]">
+        <span className="outfit text-right text-main-dark text-[14px] font-normal leading-[18px]">
           {t('Немає облікового запису?')}
         </span>
         <Button
           variant="clear"
           onClick={onClickChangeForm}
-          className="outfit text-right text-black text-[14px] font-semibold decoration-solid decoration-black underline decoration-1"
+          className="outfit text-right text-main-dark text-[14px] font-semibold decoration-solid decoration-main-dark underline decoration-1"
         >
-          {t('Зареєструватись')}
+          {t('Зареєструватися')}
         </Button>
       </VStack>
     </form>

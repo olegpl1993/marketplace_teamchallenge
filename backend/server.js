@@ -11,13 +11,17 @@ import morgan from 'morgan';
 import { Server } from 'socket.io';
 
 import swaggerDocs from './docs/swagger/swager.js';
+import AdminRoute from './src/components/routes/adminRoute.js';
 import authRoute from './src/components/routes/authRoute.js';
 import categoryRoute from './src/components/routes/categoryRoute.js';
 import controlPanelRoute from './src/components/routes/controlPanelRoute.js';
+import FeedbackRoute from './src/components/routes/FeedbackRoute.js';
 import onlineStatusRoute from './src/components/routes/onlineStatusRoute.js';
 import productRoute from './src/components/routes/productRoute.js';
 import roleRoute from './src/components/routes/roleRoute.js';
+import sellerRoute from './src/components/routes/sellerRoute.js';
 import statusRoute from './src/components/routes/statusRoute.js';
+import supportRoute from './src/components/routes/supportRoute.js';
 import userRoute from './src/components/routes/userRoutes.js';
 import wishlistRoute from './src/components/routes/wishlistRoute.js';
 import config from './src/config/config.js';
@@ -110,12 +114,20 @@ app.use('/api/products', productRoute);
 app.use('/api/category', categoryRoute);
 app.use('/api/control-panel', controlPanelRoute);
 app.use('/api/wishlist', wishlistRoute);
+app.use('/api/seller', sellerRoute);
+app.use('/api/support', supportRoute);
+app.use('/api/feedback', FeedbackRoute);
+app.use('/api/admin', AdminRoute);
 
 app.use('/static/products', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/static/banners', express.static(path.join(__dirname, 'public/banners')));
 app.use('/static/category', express.static(path.join(__dirname, 'public/category')));
+app.use('/static/comments', express.static(path.join(__dirname, 'public/comments')));
+app.use('/static/support', express.static(path.join(__dirname, 'public/support')));
 
 server.listen(config.port, async () => {
+  // eslint-disable-next-line no-console
+  console.log('\n\n\n\n\n');
   // eslint-disable-next-line no-console
   console.log(`Server is running on https://localhost:${config.port}`);
 

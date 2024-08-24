@@ -1,4 +1,4 @@
-import { DetailedHTMLProps, FC, HTMLAttributes, ReactNode } from 'react';
+import { DetailedHTMLProps, forwardRef, HTMLAttributes, ReactNode } from 'react';
 
 type FlexDirection = 'row' | 'col';
 type AlignItems = 'start' | 'center' | 'end' | 'stretch';
@@ -57,21 +57,22 @@ export interface FlexProps extends DivProps {
   gap?: FlexGap;
 }
 
-const Flex: FC<FlexProps> = (props) => {
+const Flex = forwardRef<HTMLDivElement, FlexProps>((props, ref) => {
   const {
     children,
     className,
     direction,
     align = 'start',
     justify = 'start',
-    wrap = 'wrap',
+    wrap = 'no-wrap',
     gap = '0',
     ...otherProps
   } = props;
 
   return (
     <div
-      className={`flex flex-nowrap
+      ref={ref}
+      className={`flex 
         ${className} 
         ${directionClasses[direction]}
         ${alignClasses[align]}
@@ -84,6 +85,6 @@ const Flex: FC<FlexProps> = (props) => {
       {children}
     </div>
   );
-};
+});
 
 export default Flex;

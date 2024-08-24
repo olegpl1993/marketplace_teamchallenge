@@ -31,14 +31,17 @@ type InputTypes =
   | 'url'
   | 'week';
 
-type VariantTypes = 'basic' | 'search' | 'clear';
+type VariantTypes = 'basic' | 'search' | 'clear' | 'personal' | 'fill';
 
 const variantClasses: Record<VariantTypes, string> = {
   clear: '',
   basic:
-    'outfit min-h-[48px] min-w-[360px] pl-4 bg-transparent placeholder:white-400 text-[16px] text-gray-900 font-normal border-b-[1px] border-gray-900 focus:text-gray-900 outline-none',
+    'outfit h-auto w-auto pl-4 bg-transparent placeholder:text-disabled text-[16px] text-main-dark font-normal border-b-[1px] border-gray-900 focus:text-gray-900 outline-none',
   search:
-    'outfit min-h-[38px] min-w-[443px] pl-5 bg-gray-700 text-gray-300 placeholder:white-400 text-[14px] font-normal focus:text-gray-300 outline-none rounded-l-lg',
+    'outfit h-auto w-auto pl-5 bg-dark-grey text-light-grey placeholder:text-light-grey text-[14px] font-normal focus:text-light-grey outline-none rounded-l-lg',
+  personal:
+    'outfit h-auto w-auto pl-4 bg-transparent placeholder:text-white-transparent-70 text-[16px] text-white-transparent-70 font-normal border-b-[1px] border-white-transparent-70 focus:text-white-transparent-70 outline-none',
+  fill: 'outfit h-auto w-auto pl-4 bg-selected-dark placeholder:text-disabled text-[14px] text-disabled font-normal border-none rounded-lg focus:text-disabled outline-none',
 };
 
 interface Props extends HTMLInputProps {
@@ -52,6 +55,7 @@ interface Props extends HTMLInputProps {
   label?: string;
   error?: string;
   variant: VariantTypes;
+  classNameBlockWrap?: string;
   className?: string;
 }
 
@@ -65,12 +69,13 @@ const Input = forwardRef<HTMLInputElement, Props>((props, ref) => {
     onChange,
     onBlur,
     variant,
+    classNameBlockWrap,
     className,
     ...otherProps
   } = props;
 
   return (
-    <HStack gap="1">
+    <HStack gap="1" className={classNameBlockWrap}>
       {label && <label htmlFor={name}>{label}</label>}
       <input
         name={name}
@@ -79,10 +84,10 @@ const Input = forwardRef<HTMLInputElement, Props>((props, ref) => {
         onBlur={onBlur}
         ref={ref}
         placeholder={placeholder}
-        className={`${variantClasses[variant]} ${error && 'border-red-200'} ${className}`}
+        className={`${variantClasses[variant]} ${error && 'border-error-red'} ${className}`}
         {...otherProps}
       />
-      {error && <p className="outfit font-normal text-[12px] text-red-200">{error}</p>}
+      {error && <p className="outfit font-normal text-[12px] text-error-red">{error}</p>}
     </HStack>
   );
 });
